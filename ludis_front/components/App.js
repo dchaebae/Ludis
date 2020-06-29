@@ -11,24 +11,40 @@ import {
     StyleSheet,
     ScrollView,
     View,
-    Text,
     StatusBar,
 } from 'react-native';
+import {
+    ThemeProvider,
+} from 'react-native-elements'
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import styles from './GeneralStyles';
+
 import GoalPage from './GoalPage';
+import CustomDrawerContent from './sub-component/CustomDrawerContent';
 
 const Drawer = createDrawerNavigator();
+
+const theme = {
+    colors: {
+        primary: '#3fceb0',
+        primaryLight: '#7affe2',
+        primaryDark: '#009c81',
+        secondary: '#F7794D',
+        secondaryDark: '#DB440F',
+    }
+}
 
 const App = () => {
     return (
         <SafeAreaProvider>
             <NavigationContainer>
-                <Drawer.Navigator>
-                    <Drawer.Screen name="individualGoals" component={GoalPage}/>
+                <Drawer.Navigator drawerContent={CustomDrawerContent}>
+                    <Drawer.Screen name="Personal Goals" component={GoalPage}/>
+                    <Drawer.Screen name="Weekly Calendar" component={GoalPage}/>
+                    <Drawer.Screen name="Profile" component={GoalPage}/>
+                    <Drawer.Screen name="Team Goals" component={GoalPage}/>
                 </Drawer.Navigator>
             </NavigationContainer>
         </SafeAreaProvider>
