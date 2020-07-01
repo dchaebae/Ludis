@@ -13,6 +13,7 @@ import {
 } from '../Constants'
 import Swipeable from "react-native-gesture-handler/Swipeable"
 import Dots from 'react-native-dots-pagination';
+import { datefinderShort } from '../utilities'
 
 const styles = StyleSheet.create({
     viewArea: {
@@ -21,10 +22,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         shadowOffset: {
             width: 0,
-            height: 0,
+            height: 3,
         },
-        shadowOpacity: 5,
-        shadowRadius: 10,
+        shadowOpacity: 1,
+        shadowRadius: 5,
         borderRadius: 20,
         elevation: 5,
 
@@ -61,34 +62,6 @@ const styles = StyleSheet.create({
 
 });
 
-const fullList = [
-    {
-        short_description: 'Win Ivy Championship',
-        date: '3 Feb 2021',
-        checked: true,
-    },
-    {
-        short_description: 'Win Ivy Championship',
-        date: '3 Feb 2021',
-        checked: false,
-    },
-    {
-        short_description: 'Win Ivy Championship',
-        date: '3 Feb 2021',
-        checked: true,
-    },
-    {
-        short_description: 'Win Ivy Championship',
-        date: '3 Feb 2021',
-        checked: false,
-    },
-    {
-        short_description: 'Win Ivy Championship',
-        date: '3 Feb 2021',
-        checked: false,
-    },
-]
-
 export default class GoalPageList extends React.Component {
     
     constructor(props) {
@@ -110,15 +83,15 @@ export default class GoalPageList extends React.Component {
                     Completed
                 </Text>
                 <View style={styles.listWrapper}>
-                    { fullList.map((item, i) => (
+                    { this.props.completedData.map((item, i) => (
                                 <ListItem
                                     key={i}
-                                    title={item.date}
+                                    title={item.due_date}
                                     titleStyle={{
                                         fontFamily: 'Lato-Regular',
                                         marginBottom: 3,
                                         fontSize: 17}}
-                                    subtitle={item.short_description}
+                                    subtitle={item.name}
                                     subtitleStyle={{
                                         fontFamily: 'Lato-Regular',
                                         fontWeight: '700',
@@ -170,15 +143,15 @@ export default class GoalPageList extends React.Component {
                             Active
                         </Text>
                         <View style={styles.listWrapper}>
-                            { fullList.map((item, i) => (
+                            { this.props.activeData.map((item, i) => (
                                 <ListItem
                                     key={i}
-                                    title={item.date}
+                                    title={datefinderShort(new Date(item.due_date))}
                                     titleStyle={{
                                         fontFamily: 'Lato-Regular',
                                         marginBottom: 3,
                                         fontSize: 17}}
-                                    subtitle={item.short_description}
+                                    subtitle={item.name}
                                     subtitleStyle={{
                                         fontFamily: 'Lato-Regular',
                                         fontWeight: '700',

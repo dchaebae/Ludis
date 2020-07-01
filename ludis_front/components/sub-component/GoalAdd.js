@@ -19,6 +19,8 @@ import InsetShadow from 'react-native-inset-shadow'
 import Modal from 'react-native-modal';
 import AccordionTextInput from './AccordionTextInput'
 import axios from 'axios'
+import { datefinder, dateStandardize } from '../utilities'
+import { API_PATH } from '../Constants'
 
 styles = StyleSheet.create({
     overlay: {
@@ -122,12 +124,6 @@ styles = StyleSheet.create({
     },
 })
 
-function datefinder(dateObject) {
-    const months = ["January", "February", "March","April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const formatted_date = months[dateObject.getMonth()] + " " + dateObject.getDate() + ', ' + dateObject.getFullYear()
-    return formatted_date;
-};
-
 export default class GoalAdd extends React.Component {
 
     constructor(props) {
@@ -166,11 +162,17 @@ export default class GoalAdd extends React.Component {
         this.setState({goalName: text})
     }
     selectedShort = () => {
-        this.setState({type: 'short'})
+        this.setState({
+            type: 'short_term',
+            errorType: false,
+        })
     }
 
     selectedLong = () => {
-        this.setState({type: 'long'})
+        this.setState({
+            type: 'long_term',
+            errorType: false,
+        })
     }
 
     changeDate = (e, date) => {
@@ -191,7 +193,7 @@ export default class GoalAdd extends React.Component {
             type: 'none',
             date: datefinder(currdate),
             dateISO: currdate.toISOString(),
-            note: '',
+            notes: '',
 
             errorName: false,
             errorType: false,
@@ -207,7 +209,22 @@ export default class GoalAdd extends React.Component {
             errorType: typeCheck
         })
         if (!nameCheck && !typeCheck) {
-            console.log("FULL") 
+            const dateStandard = dateStandardize(new Date(this.state.dateISO))
+            axios.post(API_PATH + '/api/v1/goals', {
+                name: this.state.goalName,
+                type: this.state.type,
+                due_date: dateStandard,
+                notes: this.state.notes,
+                assignee_id: 1,
+            }).then((response) => {
+                if (this.state.type === 'short_term') {
+                    this.props.updateShort(response.data)
+                }
+                else {
+                    this.props.updateLong(response.data)
+                }
+                this.closeModal()
+            })
         }
     }
 
@@ -234,7 +251,7 @@ export default class GoalAdd extends React.Component {
                 </React.Fragment>
             )
         }
-        else if (this.state.type === 'short') {
+        else if (this.state.type === 'short_term') {
             ButtonRow = (
                 <React.Fragment>
                     <View style={styles.buttonSelectView}>
@@ -259,7 +276,7 @@ export default class GoalAdd extends React.Component {
                 </React.Fragment>
             )
         }
-        else if (this.state.type === 'long') {
+        else if (this.state.type === 'long_term') {
             ButtonRow = (
                 <React.Fragment>
                     <View style={styles.buttonSelectView}>

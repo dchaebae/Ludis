@@ -5,6 +5,7 @@ import {
     Animated,
     StyleSheet,
     Text,
+    Dimensions,
 } from 'react-native';
 import {
     Icon,
@@ -20,14 +21,17 @@ import {
     HEADER_MAX_HEIGHT,
     HEADER_MIN_HEIGHT,
     HEADER_SCROLL_DISTANCE
-} from './Constants'
+} from './Constants';
+import axios from 'axios';
+import { API_PATH } from './Constants'
+import {insertItem} from './utilities'
 
 const styles = StyleSheet.create({
     container: {
         display: 'flex',
         flex: 1,
         alignItems: 'center',
-        backgroundColor: '#d8d8d8',
+        backgroundColor: 'white',
         position: 'relative',
         flexDirection: 'column',
         width: '100%',
@@ -70,7 +74,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         height: HEADER_MIN_HEIGHT,
         justifyContent: 'space-between',
-        margin: 10
+        margin: 10,
     },
     headerMenuWrapper: {
         flex: 1,
@@ -150,6 +154,7 @@ const styles = StyleSheet.create({
     },
 
     goalsScrollView: {
+        flex: 1,
         width: '100%',
         height: '100%',
         zIndex: 30,
@@ -157,11 +162,13 @@ const styles = StyleSheet.create({
     goalsFlexContainer: {
         flex: 1,
         flexDirection: 'column',
+        justifyContent: 'flex-start',
         width: '90%',
         backgroundColor:'transparent',
         marginLeft: 'auto',
         marginRight: 'auto',
-        paddingBottom: 20,
+        paddingBottom: 500,
+        top:50,
     },
 });
 
@@ -177,15 +184,72 @@ class GoalPage extends React.Component {
         super(props);
         this.state = {
             scrollY: new Animated.Value(0, {useNativeDriver: true}),
-            addOpen: true,
+            addOpen: false,
+            shortActive: [],
+            shortCompleted: [],
+            longActive: [],
+            longCompleted: [],
         }
         this.handleAddOpen = this.handleAddOpen.bind(this);
+        this.updateShort = this.updateShort.bind(this);
+        this.updateLong = this.updateLong.bind(this);
     }
 
     handleAddOpen = () => {
         this.setState(state => ({
             addOpen: !state.addOpen
         }))
+    }
+
+    componentDidMount() {
+        axios.get(API_PATH+'/api/v1/goals')
+            .then((response) => {
+                shortActive = [];
+                shortCompleted = [];
+                longActive = [];
+                longCompleted = [];
+                response.data.forEach(function (item) {
+                    if (!item.is_completed) {
+                        if (item.type === 'long_term') {
+                            longActive.push(item)
+                        }
+                        else {
+                            shortActive.push(item)
+                        }
+                    }
+                    else {
+                        if (item.type === 'long_term') {
+                            longCompleted.push(item)
+                        }
+                        else {
+                            shortCompleted.push(item)
+                        }
+                    }
+                })
+
+                this.setState({
+                    longActive: longActive,
+                    shortActive: shortActive,
+                    longCompleted: longCompleted,
+                    shortCompleted: shortCompleted,
+                })
+            })
+    }
+
+    updateShort(item) {
+        var copy = [...this.state.shortActive]
+        copy = insertItem(copy, item)
+        this.setState({
+            shortActive: copy
+        })
+    }
+
+    updateLong(item) {
+        var copy = [...this.state.longActive]
+        copy = insertItem(copy, item)
+        this.setState({
+            longActive: copy
+        })
     }
 
     // get the navigation element
@@ -196,8 +260,8 @@ class GoalPage extends React.Component {
     // interpolate header height
     _getHeaderHeight = () => {
         return this.state.scrollY.interpolate({
-            inputRange: [0, HEADER_SCROLL_DISTANCE/4+2, HEADER_SCROLL_DISTANCE],
-            outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT, HEADER_MIN_HEIGHT],
+            inputRange: [0, 40, 90, HEADER_SCROLL_DISTANCE],
+            outputRange: [HEADER_MAX_HEIGHT, 235, HEADER_MIN_HEIGHT, HEADER_MIN_HEIGHT],
             extrapolate: 'clamp',
             useNativeDriver: true,
         });
@@ -260,7 +324,7 @@ class GoalPage extends React.Component {
 
     _getHeaderZIndex = () => {
         return this.state.scrollY.interpolate({
-            inputRange: [0, HEADER_SCROLL_DISTANCE/4, HEADER_SCROLL_DISTANCE],
+            inputRange: [0, 60, HEADER_SCROLL_DISTANCE],
             outputRange: [0, 31, 31],
             extrapolate: 'clamp',
             useNativeDriver: true
@@ -269,8 +333,8 @@ class GoalPage extends React.Component {
 
     _getScrollViewTop = () => {
         return this.state.scrollY.interpolate({
-            inputRange: [0, HEADER_SCROLL_DISTANCE/2, HEADER_SCROLL_DISTANCE],
-            outputRange: [HEADER_MAX_HEIGHT-320, 0, 0],
+            inputRange: [0, 180, HEADER_SCROLL_DISTANCE],
+            outputRange: [230, 0, 0],
             extrapolate: 'clamp',
             useNativeDriver: true
         })
@@ -343,7 +407,9 @@ class GoalPage extends React.Component {
                                     <ImageBackground
                                         style={styles.headerMainLaurel}
                                         source={require('./static/wreath.png')}>
-                                        <Text style={styles.headerDataNumber}>36</Text>
+                                        <Text style={styles.headerDataNumber}>
+                                            {this.state.longCompleted.length + this.state.shortCompleted.length}
+                                        </Text>
                                     </ImageBackground>
                                     <Text style={[styles.headerDataText, {flex: 0.5}]}>
                                         Total{"\n"}Completed
@@ -356,7 +422,9 @@ class GoalPage extends React.Component {
                                             source={require('./static/wreath.png')}
                                             imageStyle={{
                                             }}>
-                                            <Text style={styles.headerDataNumber}>3</Text>
+                                            <Text style={styles.headerDataNumber}>
+                                                {this.state.shortActive.length}
+                                            </Text>
                                         </ImageBackground>
                                         <Text style={styles.headerDataText}>
                                             Short-Term{"\n"}Goals
@@ -366,7 +434,9 @@ class GoalPage extends React.Component {
                                         <ImageBackground
                                             style={styles.headerSubLaurel}
                                             source={require('./static/wreath.png')}>
-                                            <Text style={styles.headerDataNumber}>2</Text>
+                                            <Text style={styles.headerDataNumber}>
+                                                {this.state.longActive.length}
+                                            </Text>
                                         </ImageBackground>
                                         <Text style={styles.headerDataText}>
                                             Long-Term{"\n"}Goals
@@ -379,23 +449,34 @@ class GoalPage extends React.Component {
                 </Animated.View>
             </Animated.View>
 
+            <Animated.View style={[styles.goalsScrollView, {marginTop: scrollViewTop}]}>
             <Animated.ScrollView
                 bounces={false}
-                scrollEventThrottle={16}
-                centerContent
+                scrollEventThrottle={1}
                 showsVerticalScrollIndicator={false}
                 onScroll={Animated.event(
                     [{nativeEvent: {contentOffset: {y: this.state.scrollY}}}], {useNativeDriver: false}
                 )}
-                style={[styles.goalsScrollView, {top: scrollViewTop}]}
-                contentContainerStyle={{justifyContent: 'flex-start', alignItems: 'center'}}> 
+                style={{width: '100%'}}
+                > 
                     <View style={styles.goalsFlexContainer}>
-                        <GoalPageList title={'Short-Term Goals'}/>
-                        <GoalPageList title={'Long-Term Goals'}/>
+                        <GoalPageList
+                            title={'Short-Term Goals'}
+                            activeData={this.state.shortActive}
+                            completedData={this.state.shortCompleted}/>
+                        <GoalPageList
+                            title={'Long-Term Goals'}
+                            activeData={this.state.longActive}
+                            completedData={this.state.longCompleted}/>
                     </View>
             </Animated.ScrollView>
+            </Animated.View>
 
-            <GoalAdd open={this.state.addOpen} handleOpen={this.handleAddOpen}/>
+            <GoalAdd
+                open={this.state.addOpen}
+                handleOpen={this.handleAddOpen}
+                updateShort={this.updateShort}
+                updateLong={this.updateLong}/>
 
             </View>
         );
