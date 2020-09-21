@@ -22,6 +22,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 
 import GoalPage from './GoalPage';
+import Welcome from './Welcome';
 import CustomDrawerContent from './sub-component/CustomDrawerContent';
 
 const Drawer = createDrawerNavigator();
@@ -40,9 +41,10 @@ const App = () => {
     return (
         <SafeAreaProvider>
             <NavigationContainer>
-                <Drawer.Navigator drawerContent={CustomDrawerContent}>
+                <Drawer.Navigator initialRouteName='Weekly Calendar' drawerContent={CustomDrawerContent}>
+                    
                     <Drawer.Screen name="Personal Goals" component={GoalPage}/>
-                    <Drawer.Screen name="Weekly Calendar" component={GoalPage}/>
+                    <Drawer.Screen name="Weekly Calendar" component={Welcome}/>
                     <Drawer.Screen name="Profile" component={GoalPage}/>
                     <Drawer.Screen name="Team Goals" component={GoalPage}/>
                 </Drawer.Navigator>

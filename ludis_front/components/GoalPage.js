@@ -5,7 +5,6 @@ import {
     Animated,
     StyleSheet,
     Text,
-    Dimensions,
 } from 'react-native';
 import {
     Icon,
